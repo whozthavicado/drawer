@@ -1,36 +1,58 @@
 @import "tailwindcss";
 
 /*
-  Drawer design tokens — see design-system/drawer/MASTER.md for the full
-  rationale (colors, typography, spacing, motion).
+  Drawer design tokens — "Nocturne" system, imported from the Claude Design
+  mockup (design-system/drawer/MASTER.md is the earlier iteration; this file
+  now reflects the mockup's actual tokens, which supersede it).
 */
 :root {
-  --background: #1c1917;
-  --foreground: #ffffff;
-  --card: #262321;
-  --muted: #231b28;
-  --muted-foreground: #a89f9c;
-  --border: rgba(255, 255, 255, 0.08);
-  --primary: #7c3aed;
-  --primary-foreground: #ffffff;
-  --accent: #0891b2;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
+  --background: #0e0f18;
+  --surface: #232532;
+  --foreground: #e9e9ed;
+  --muted-foreground: color-mix(in srgb, #e9e9ed 55%, transparent);
+  --divider: color-mix(in srgb, #e9e9ed 16%, transparent);
+  --border: var(--divider);
+
+  --accent: #9184d9;
+  --accent-100: #f5f4ff;
+  --accent-200: #e7e5fe;
+  --accent-300: #d2cefd;
+  --accent-400: #b5abfc;
+  --accent-500: #968ae0;
+  --accent-600: #796cbf;
+  --accent-700: #5d5294;
+  --accent-800: #423a6a;
+  --accent-900: #2b2741;
+
+  --neutral-100: #f3f5fe;
+  --neutral-700: #595d6c;
+  --neutral-900: #292b31;
+
+  --destructive: #f0a3a3;
   --destructive-foreground: #ffffff;
-  --ring: #7c3aed;
+  --ring: var(--accent);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  --shadow-sm: 0 0 0 1px #3f424d;
+  --shadow-md: 0 0 0 1px #595d6c, 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-muted: var(--muted);
+  --color-card: var(--surface);
+  --color-surface: var(--surface);
+  --color-muted: var(--surface);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-foreground: #ffffff;
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-ring: var(--ring);
@@ -42,24 +64,257 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 15px;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+/* JetBrains Mono is reserved for the wordmark, section labels/kickers,
+   filenames, and note content that reads as code — never for headings or
+   body prose. Apply it explicitly via font-mono, not globally. */
+.font-mono {
   font-family: var(--font-heading), monospace;
-  letter-spacing: -0.01em;
 }
 
 * {
-  scrollbar-color: var(--muted) transparent;
+  scrollbar-color: var(--surface) transparent;
 }
 
-/* Every interactive control gets a visible focus ring — accessibility, not optional. */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-300);
+}
+
+:focus {
+  outline: none;
+}
+:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* — buttons — */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.btn-primary:active {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.btn-primary-filled {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.btn-primary-filled:hover {
+  opacity: 0.9;
+}
+.btn-secondary {
+  border-color: var(--divider);
+}
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+.btn-ghost {
+  color: var(--accent);
+  padding-inline: 4px;
+}
+.btn-ghost:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.btn-danger {
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 55%, transparent);
+}
+.btn-danger:hover {
+  background: color-mix(in srgb, var(--destructive) 12%, transparent);
+}
+.btn-block {
+  width: 100%;
+}
+
+/* — forms — */
+.field > label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: var(--muted-foreground);
+}
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--foreground);
+  caret-color: var(--accent);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
+  transition: border-color 150ms ease;
+}
+.input::placeholder {
+  color: color-mix(in srgb, var(--foreground) 40%, transparent);
+}
+.input:hover {
+  border-color: color-mix(in srgb, var(--foreground) 45%, transparent);
+}
+.input:focus-visible {
+  border-color: var(--accent);
+  outline-offset: 0;
+}
+textarea.input {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.seg {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
+}
+.seg-opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding-inline: 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.seg-opt + .seg-opt {
+  border-left: 1px solid var(--divider);
+}
+.seg-opt:has(input:checked) {
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.seg-opt:not(:has(input:checked)):hover {
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+.seg-opt input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* — cards — */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* — tags — */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-family: var(--font-heading), monospace;
+}
+.tag-accent {
+  background: var(--accent-900);
+  color: var(--accent-200);
+}
+.tag-neutral {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  color: var(--foreground);
+}
+.tag-outline {
+  border: 1px solid var(--divider);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+.tag-outline:hover {
+  border-color: var(--accent);
+}
+.tag-outline.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* — dialog — */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--neutral-900) 55%, transparent);
+}
+.dialog {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+@keyframes barber {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 28px 0;
+  }
 }

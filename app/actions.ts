@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { parseTags } from "@/lib/notes";
 import { revalidatePath } from "next/cache";
 
 export async function createNote(formData: FormData) {
@@ -12,10 +13,11 @@ export async function createNote(formData: FormData) {
 
   const title = String(formData.get("title") ?? "");
   const content = String(formData.get("content") ?? "");
+  const tags = parseTags(String(formData.get("tags") ?? ""));
 
   const { error } = await supabase
     .from("notes")
-    .insert({ user_id: user.id, title, content });
+    .insert({ user_id: user.id, title, content, tags });
   if (error) throw new Error(error.message);
 
   revalidatePath("/");
@@ -25,10 +27,11 @@ export async function updateNote(id: string, formData: FormData) {
   const supabase = await createClient();
   const title = String(formData.get("title") ?? "");
   const content = String(formData.get("content") ?? "");
+  const tags = parseTags(String(formData.get("tags") ?? ""));
 
   const { error } = await supabase
     .from("notes")
-    .update({ title, content })
+    .update({ title, content, tags })
     .eq("id", id);
   if (error) throw new Error(error.message);
 
