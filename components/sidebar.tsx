@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Notas", icon: "ph-note" },
-  { href: "/tools", label: "Herramientas", icon: "ph-squares-four", isSection: true },
+  { href: "/tools", label: "Herramientas", icon: "ph-squares-four" },
   { href: "/tools/zip", label: "ZIP", icon: "ph-file-zip" },
   { href: "/tools/image", label: "Convertir imagen", icon: "ph-image" },
   { href: "/tools/media", label: "Audio y video", icon: "ph-waveform" },
@@ -89,7 +89,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
         <div className="mb-1.5 mt-5 px-2.5 font-mono text-[10px] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--foreground)_38%,transparent)]">
           Herramientas
         </div>
-        {LINKS.filter((l) => !l.isSection && l.href !== "/").map((l) => (
+        {LINKS.filter((l) => l.href !== "/").map((l) => (
           <NavLink
             key={l.href}
             href={l.href}
@@ -153,7 +153,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
           <div className="mb-1.5 mt-6 px-2.5 font-mono text-[10.5px] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--foreground)_38%,transparent)]">
             Herramientas
           </div>
-          {LINKS.filter((l) => !l.isSection && l.href !== "/").map((l) => (
+          {LINKS.filter((l) => l.href !== "/").map((l) => (
             <NavLink
               key={l.href}
               href={l.href}
