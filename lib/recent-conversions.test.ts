@@ -1,17 +1,37 @@
-// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { addRecentConversion, getRecentConversions } from "./recent-conversions";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// A minimal in-memory Storage polyfill, standing in for `localStorage`.
+// Deliberately NOT using vitest's jsdom environment here: jsdom 30's bundled
+// undici requires Node 22+ APIs (`webidl.util.markAsUncloneable`) that don't
+// exist on this project's Node 20 baseline, which crashes the whole test
+// file before a single test runs. `recent-conversions.ts` only touches the
+// bare `localStorage` global (see readAll/writeAll) — it never needs a DOM —
+// so a plain object satisfying the Storage shape used here is enough.
+class MemoryStorage {
+  private store = new Map<string, string>();
+  getItem(key: string) {
+    return this.store.has(key) ? this.store.get(key)! : null;
+  }
+  setItem(key: string, value: string) {
+    this.store.set(key, value);
+  }
+  clear() {
+    this.store.clear();
+  }
+}
+
 describe("recent-conversions", () => {
   beforeEach(() => {
-    localStorage.clear();
+    vi.stubGlobal("localStorage", new MemoryStorage());
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it("adds an entry and returns it newest-first", () => {
