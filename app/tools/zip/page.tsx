@@ -45,20 +45,32 @@ export default function ZipToolPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="mb-6 text-2xl font-semibold">ZIP</h1>
+    <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
+      <h1 className="mb-6 font-mono text-2xl font-semibold">ZIP</h1>
 
-      <section className="mb-8">
-        <h2 className="mb-2 font-medium">Comprimir</h2>
-        <input type="file" multiple onChange={handleCompress} />
-      </section>
+      <div className="flex flex-col gap-4">
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+          <h2 className="mb-3 font-medium">Comprimir</h2>
+          <input
+            type="file"
+            multiple
+            onChange={handleCompress}
+            className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-foreground hover:file:opacity-90"
+          />
+        </section>
 
-      <section>
-        <h2 className="mb-2 font-medium">Descomprimir</h2>
-        <input type="file" accept=".zip" onChange={handleDecompress} />
-      </section>
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+          <h2 className="mb-3 font-medium">Descomprimir</h2>
+          <input
+            type="file"
+            accept=".zip"
+            onChange={handleDecompress}
+            className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent file:px-4 file:font-medium file:text-accent-foreground hover:file:opacity-90"
+          />
+        </section>
+      </div>
 
-      {status ? <p className="mt-4 text-sm text-neutral-600">{status}</p> : null}
+      {status ? <p className="mt-4 text-sm text-muted-foreground">{status}</p> : null}
     </main>
   );
 }

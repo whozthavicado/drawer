@@ -15,28 +15,32 @@ export function NoteList({ notes }: { notes: Note[] }) {
     (n.title + " " + n.content).toLowerCase().includes(query.toLowerCase()),
   );
 
+  function handleDelete(id: string) {
+    if (window.confirm("¿Borrar esta nota? No se puede deshacer.")) {
+      deleteNote(id);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           placeholder="Buscar…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 rounded border border-neutral-300 px-3 py-2"
+          className="min-h-[44px] flex-1 rounded-lg border border-border bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground/60"
         />
         <button
           onClick={() => setCreating(true)}
-          className="rounded bg-neutral-900 px-3 py-2 text-white"
+          className="min-h-[44px] cursor-pointer rounded-lg bg-primary px-4 font-medium text-primary-foreground transition-colors hover:opacity-90"
         >
           Nueva nota
         </button>
       </div>
 
-      {creating ? (
-        <NoteEditor onClose={() => setCreating(false)} />
-      ) : null}
+      {creating ? <NoteEditor onClose={() => setCreating(false)} /> : null}
 
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-3">
         {filtered.map((note) =>
           editingId === note.id ? (
             <li key={note.id}>
@@ -45,25 +49,25 @@ export function NoteList({ notes }: { notes: Note[] }) {
           ) : (
             <li
               key={note.id}
-              className="flex items-start justify-between gap-3 rounded border border-neutral-200 p-3"
+              className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-colors sm:flex-row sm:items-start sm:justify-between"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{displayTitle(note)}</p>
-                <p className="truncate text-sm text-neutral-500">
+                <p className="line-clamp-2 text-sm text-muted-foreground">
                   {note.content}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-1">
+              <div className="flex shrink-0 gap-2">
                 <CopyButton text={note.content} />
                 <button
                   onClick={() => setEditingId(note.id)}
-                  className="rounded border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-100"
+                  className="min-h-[44px] cursor-pointer rounded-lg border border-border px-3 text-sm text-foreground transition-colors hover:bg-muted"
                 >
                   Editar
                 </button>
                 <button
-                  onClick={() => deleteNote(note.id)}
-                  className="rounded border border-red-300 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                  onClick={() => handleDelete(note.id)}
+                  className="min-h-[44px] cursor-pointer rounded-lg border border-destructive/40 px-3 text-sm text-destructive transition-colors hover:bg-destructive/10"
                 >
                   Borrar
                 </button>
@@ -72,8 +76,10 @@ export function NoteList({ notes }: { notes: Note[] }) {
           ),
         )}
         {filtered.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            {notes.length === 0 ? "Todavía no tienes notas." : "Sin resultados."}
+          <p className="text-sm text-muted-foreground">
+            {notes.length === 0
+              ? "Todavía no tienes notas."
+              : "Sin resultados."}
           </p>
         ) : null}
       </ul>

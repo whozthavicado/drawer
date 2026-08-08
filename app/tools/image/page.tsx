@@ -39,28 +39,35 @@ export default function ImageToolPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="mb-6 text-2xl font-semibold">Convertir imagen</h1>
+    <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
+      <h1 className="mb-6 font-mono text-2xl font-semibold">Convertir imagen</h1>
 
-      <div className="mb-4 flex gap-2">
-        {(["png", "jpeg", "webp"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFormat(f)}
-            className={`rounded border px-3 py-1.5 text-sm ${
-              format === f
-                ? "border-neutral-900 bg-neutral-900 text-white"
-                : "border-neutral-300"
-            }`}
-          >
-            {f.toUpperCase()}
-          </button>
-        ))}
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <div className="mb-4 flex gap-2">
+          {(["png", "jpeg", "webp"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFormat(f)}
+              className={`min-h-[44px] cursor-pointer rounded-lg border px-4 text-sm font-medium transition-colors ${
+                format === f
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFile}
+          className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-foreground hover:file:opacity-90"
+        />
       </div>
 
-      <input type="file" accept="image/*" onChange={handleFile} />
-
-      {status ? <p className="mt-4 text-sm text-neutral-600">{status}</p> : null}
+      {status ? <p className="mt-4 text-sm text-muted-foreground">{status}</p> : null}
     </main>
   );
 }

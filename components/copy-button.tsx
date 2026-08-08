@@ -3,20 +3,28 @@
 import { useState } from "react";
 
 export function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"idle" | "copied" | "error">("idle");
 
   async function handleClick() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(text);
+      setState("copied");
+    } catch {
+      setState("error");
+    }
+    setTimeout(() => setState("idle"), 1500);
   }
 
   return (
     <button
       onClick={handleClick}
-      className="rounded border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-100"
+      className={`min-h-[44px] cursor-pointer rounded-lg border px-3 text-sm transition-colors ${
+        state === "error"
+          ? "border-destructive/40 text-destructive"
+          : "border-border text-foreground hover:bg-muted"
+      }`}
     >
-      {copied ? "Copiado" : "Copiar"}
+      {state === "copied" ? "Copiado" : state === "error" ? "Error" : "Copiar"}
     </button>
   );
 }

@@ -68,46 +68,61 @@ export default function MediaToolPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="mb-6 text-2xl font-semibold">Convertir audio/video</h1>
+    <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
+      <h1 className="mb-6 font-mono text-2xl font-semibold">Convertir audio/video</h1>
 
-      <div className="mb-4 flex flex-col gap-2">
-        {PRESETS.map((p) => (
-          <label key={p.label} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="preset"
-              checked={preset.label === p.label}
-              onChange={() => setPreset(p)}
-            />
-            {p.label}
-          </label>
-        ))}
-      </div>
-
-      <input type="file" accept={`.${preset.from}`} onChange={handleFile} />
-
-      {phase !== "idle" ? (
-        <div className="mt-4">
-          <p className="mb-1 text-sm text-neutral-600">
-            {phase === "loading" && "Preparando…"}
-            {phase === "converting" && `Convirtiendo… ${progress}%`}
-            {phase === "done" && "Listo."}
-          </p>
-          {phase === "error" ? (
-            <p className="text-sm text-red-600">{error}</p>
-          ) : (
-            <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
-              <div
-                className={`h-full bg-neutral-900 transition-all duration-200 ${
-                  phase === "loading" ? "w-1/3 animate-pulse" : ""
-                }`}
-                style={phase === "converting" || phase === "done" ? { width: `${phase === "done" ? 100 : progress}%` } : undefined}
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <div className="mb-4 flex flex-col gap-1">
+          {PRESETS.map((p) => (
+            <label
+              key={p.label}
+              className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg px-2 transition-colors hover:bg-muted"
+            >
+              <input
+                type="radio"
+                name="preset"
+                checked={preset.label === p.label}
+                onChange={() => setPreset(p)}
+                className="h-4 w-4 accent-primary"
               />
-            </div>
-          )}
+              {p.label}
+            </label>
+          ))}
         </div>
-      ) : null}
+
+        <input
+          type="file"
+          accept={`.${preset.from}`}
+          onChange={handleFile}
+          className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-foreground hover:file:opacity-90"
+        />
+
+        {phase !== "idle" ? (
+          <div className="mt-4">
+            <p className="mb-1 text-sm text-muted-foreground">
+              {phase === "loading" && "Preparando…"}
+              {phase === "converting" && `Convirtiendo… ${progress}%`}
+              {phase === "done" && "Listo."}
+            </p>
+            {phase === "error" ? (
+              <p className="text-sm text-destructive">{error}</p>
+            ) : (
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={`h-full bg-primary transition-all duration-200 ${
+                    phase === "loading" ? "w-1/3 animate-pulse" : ""
+                  }`}
+                  style={
+                    phase === "converting" || phase === "done"
+                      ? { width: `${phase === "done" ? 100 : progress}%` }
+                      : undefined
+                  }
+                />
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
     </main>
   );
 }
