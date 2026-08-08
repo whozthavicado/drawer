@@ -97,3 +97,40 @@ que exige `user_id = auth.uid()`.
    ruta con carga perezosa.
 8. Logo (SVG a mano) + metadata del sitio.
 9. Deploy a Vercel (proyecto nuevo, dominio provisional de Vercel).
+
+## 8. Amendments post-QA (2026-08-08)
+
+Lo siguiente documenta cambios hechos después del diseño original, a raíz
+de QA en producción. El diseño original arriba queda como referencia
+histórica; esta sección describe qué cambió y por qué.
+
+### Auth: de magic link a email+password
+
+El diseño original especificaba autenticación passwordless vía magic link
+(`supabase.auth.signInWithOtp`). En QA de producción, el mailer de prueba
+integrado de Supabase resultó tener un límite de envío muy estricto: los
+logs de Auth mostraban errores `429` repetidos con código
+`over_email_send_rate_limit`. Esto hacía que el login por magic link
+fuera poco confiable para uso diario (el usuario se quedaba sin poder
+recibir el correo de acceso).
+
+Como corrección (commit `24b3aa9`), el login se cambió a email+password
+usando `supabase.auth.signInWithPassword`. `/login` ahora pide correo y
+contraseña en vez de solo correo.
+
+### Nueva ruta: `/account`
+
+Para poder establecer y cambiar la contraseña desde una sesión ya
+autenticada — sin depender del dashboard de Supabase ni de otro correo
+sujeto al mismo rate limit — se agregó la ruta `/account` (commit
+`738a55e`), no contemplada en la tabla de rutas original. Llama a
+`supabase.auth.updateUser({ password })` y, más adelante, también incluye
+un botón de "Cerrar sesión" (`supabase.auth.signOut()`).
+
+### `/tools/media`: barra de progreso en vivo
+
+`/tools/media` ganó una barra de progreso alimentada por el evento
+`progress` de ffmpeg.wasm, para reflejar el avance real de la conversión
+en vez de solo un estado "cargando". El texto original en la UI sobre la
+descarga inicial ("~25-30MB la primera vez") se quitó, ya que la barra de
+progreso ahora comunica ese estado por sí sola.
