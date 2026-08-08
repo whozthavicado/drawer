@@ -5,6 +5,7 @@ const LINKS = [
   { href: "/tools/zip", label: "ZIP" },
   { href: "/tools/image", label: "Imagen" },
   { href: "/tools/media", label: "Audio/Video" },
+  { href: "/account", label: "Cuenta" },
 ];
 
 export function Nav({ showLinks = true }: { showLinks?: boolean }) {
