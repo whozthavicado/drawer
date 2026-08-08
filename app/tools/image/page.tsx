@@ -1,16 +1,39 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { swapExtension, mimeForFormat, type ImageFormat } from "@/lib/image";
+import { addRecentConversion } from "@/lib/recent-conversions";
+
+const FORMATS: { value: ImageFormat; label: string }[] = [
+  { value: "png", label: "PNG" },
+  { value: "jpeg", label: "JPEG" },
+  { value: "webp", label: "WebP" },
+];
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function ImageToolPage() {
   const [format, setFormat] = useState<ImageFormat>("jpeg");
-  const [status, setStatus] = useState("");
+  const [converting, setConverting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    originalName: string;
+    toExt: string;
+    size: number;
+  } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    setStatus("Convirtiendo…");
+    setConverting(true);
+    setError(null);
+    setResult(null);
 
     const bitmap = await createImageBitmap(file);
     const canvas = document.createElement("canvas");
@@ -21,17 +44,25 @@ export default function ImageToolPage() {
 
     canvas.toBlob(
       (blob) => {
+        setConverting(false);
         if (!blob) {
-          setStatus("No se pudo convertir esta imagen.");
+          setError("No se pudo convertir esta imagen.");
           return;
         }
+        const name = swapExtension(file.name, format);
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = swapExtension(file.name, format);
+        a.download = name;
         a.click();
         URL.revokeObjectURL(url);
-        setStatus("Listo.");
+
+        const fromExt = file.name.includes(".")
+          ? file.name.split(".").pop()!.toUpperCase()
+          : "?";
+        const toExt = format.toUpperCase();
+        setResult({ originalName: file.name, toExt, size: blob.size });
+        addRecentConversion({ filename: name, label: `${fromExt} → ${toExt}` });
       },
       mimeForFormat(format),
       0.92,
@@ -42,32 +73,59 @@ export default function ImageToolPage() {
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
       <h1 className="mb-6 font-mono text-2xl font-semibold">Convertir imagen</h1>
 
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-        <div className="mb-4 flex gap-2">
-          {(["png", "jpeg", "webp"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFormat(f)}
-              className={`min-h-[44px] cursor-pointer rounded-lg border px-4 text-sm font-medium transition-colors ${
-                format === f
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              {f.toUpperCase()}
-            </button>
+      <div className="card flex flex-col gap-5 p-5">
+        <div className="seg">
+          {FORMATS.map((f) => (
+            <label key={f.value} className="seg-opt">
+              <input
+                type="radio"
+                name="format"
+                checked={format === f.value}
+                onChange={() => setFormat(f.value)}
+              />
+              {f.label}
+            </label>
           ))}
         </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFile}
-          className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-foreground hover:file:opacity-90"
-        />
-      </div>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-center transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+          style={{ borderColor: "var(--divider)" }}
+        >
+          <i className="ph ph-upload-simple" style={{ fontSize: 26, color: "var(--muted-foreground)" }} />
+          <span className="text-sm text-muted-foreground">
+            {converting ? "Convirtiendo…" : "Elegir imagen"}
+          </span>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFile}
+            className="hidden"
+          />
+        </button>
 
-      {status ? <p className="mt-4 text-sm text-muted-foreground">{status}</p> : null}
+        {result ? (
+          <div
+            className="flex items-center gap-3 rounded-lg p-3"
+            style={{ background: "color-mix(in srgb, var(--accent) 10%, transparent)" }}
+          >
+            <i className="ph ph-check" style={{ fontSize: 18, color: "var(--accent)" }} />
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="truncate font-mono">
+                {result.originalName} → .{result.toExt.toLowerCase()}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatSize(result.size)} — descargado
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      </div>
     </main>
   );
 }

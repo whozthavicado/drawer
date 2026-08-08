@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { swapMediaExtension } from "@/lib/media";
+import { addRecentConversion } from "@/lib/recent-conversions";
 
 const PRESETS = [
   { label: "MP4 → MP3", from: "mp4", to: "mp3" },
@@ -11,16 +12,26 @@ const PRESETS = [
 
 type Phase = "idle" | "loading" | "converting" | "done" | "error";
 
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function MediaToolPage() {
   const [preset, setPreset] = useState<(typeof PRESETS)[number]>(PRESETS[0]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [activeFile, setActiveFile] = useState<File | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
+    setActiveFile(file);
     setPhase("loading");
     setProgress(0);
     setError(null);
@@ -53,13 +64,15 @@ export default function MediaToolPage() {
       const blob = new Blob([new Uint8Array(data as Uint8Array)], {
         type: `application/octet-stream`,
       });
+      const name = swapMediaExtension(file.name, preset.to);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = swapMediaExtension(file.name, preset.to);
+      a.download = name;
       a.click();
       URL.revokeObjectURL(url);
       setPhase("done");
+      addRecentConversion({ filename: name, label: preset.label });
     } catch (err) {
       console.error(err);
       setPhase("error");
@@ -67,59 +80,131 @@ export default function MediaToolPage() {
     }
   }
 
+  function reset() {
+    setPhase("idle");
+    setProgress(0);
+    setError(null);
+    setActiveFile(null);
+  }
+
+  const isWorking = phase === "loading" || phase === "converting";
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
       <h1 className="mb-6 font-mono text-2xl font-semibold">Convertir audio/video</h1>
 
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-        <div className="mb-4 flex flex-col gap-1">
+      <div className="card flex flex-col gap-5 p-5">
+        <div className="seg flex-wrap sm:flex-nowrap">
           {PRESETS.map((p) => (
-            <label
-              key={p.label}
-              className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg px-2 transition-colors hover:bg-muted"
-            >
+            <label key={p.label} className="seg-opt">
               <input
                 type="radio"
                 name="preset"
                 checked={preset.label === p.label}
                 onChange={() => setPreset(p)}
-                className="h-4 w-4 accent-primary"
+                disabled={isWorking}
               />
               {p.label}
             </label>
           ))}
         </div>
 
+        {phase === "idle" ? (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-center transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+            style={{ borderColor: "var(--divider)" }}
+          >
+            <i className="ph ph-upload-simple" style={{ fontSize: 26, color: "var(--muted-foreground)" }} />
+            <span className="text-sm text-muted-foreground">Elegir archivo</span>
+          </button>
+        ) : null}
+
         <input
+          ref={inputRef}
           type="file"
           accept={`.${preset.from}`}
           onChange={handleFile}
-          className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-foreground hover:file:opacity-90"
+          className="hidden"
         />
 
-        {phase !== "idle" ? (
-          <div className="mt-4">
-            <p className="mb-1 text-sm text-muted-foreground">
-              {phase === "loading" && "Preparando…"}
-              {phase === "converting" && `Convirtiendo… ${progress}%`}
-              {phase === "done" && "Listo."}
-            </p>
-            {phase === "error" ? (
-              <p className="text-sm text-destructive">{error}</p>
-            ) : (
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={`h-full bg-primary transition-all duration-200 ${
-                    phase === "loading" ? "w-1/3 animate-pulse" : ""
-                  }`}
-                  style={
-                    phase === "converting" || phase === "done"
-                      ? { width: `${phase === "done" ? 100 : progress}%` }
-                      : undefined
-                  }
-                />
+        {isWorking && activeFile ? (
+          <div className="card flex flex-col gap-3 p-4" style={{ boxShadow: "none", border: "1px solid var(--divider)" }}>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--accent)]">
+                <i className="ph ph-waveform" style={{ fontSize: 20 }} />
               </div>
-            )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-mono text-sm">{activeFile.name}</p>
+                <p className="text-xs text-muted-foreground">{formatSize(activeFile.size)}</p>
+              </div>
+            </div>
+
+            <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--divider)" }}>
+              <div
+                className="h-full transition-all duration-200"
+                style={
+                  phase === "loading"
+                    ? {
+                        width: "35%",
+                        backgroundImage:
+                          "linear-gradient(115deg, var(--accent) 25%, var(--accent-400) 25%, var(--accent-400) 50%, var(--accent) 50%, var(--accent) 75%, var(--accent-400) 75%)",
+                        backgroundSize: "28px 28px",
+                        animation: "barber 1.1s linear infinite",
+                      }
+                    : {
+                        width: `${progress}%`,
+                        backgroundImage:
+                          "linear-gradient(115deg, var(--accent) 25%, var(--accent-400) 25%, var(--accent-400) 50%, var(--accent) 50%, var(--accent) 75%, var(--accent-400) 75%)",
+                        backgroundSize: "28px 28px",
+                        animation: "barber 1.1s linear infinite",
+                      }
+                }
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {phase === "loading" ? "Preparando…" : `Convirtiendo… ${progress}%`}
+            </p>
+          </div>
+        ) : null}
+
+        {phase === "done" && activeFile ? (
+          <div
+            className="flex items-center gap-3 rounded-lg p-3"
+            style={{ background: "color-mix(in srgb, var(--accent) 10%, transparent)" }}
+          >
+            <i className="ph ph-check" style={{ fontSize: 18, color: "var(--accent)" }} />
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="truncate font-mono">
+                {swapMediaExtension(activeFile.name, preset.to)}
+              </p>
+              <p className="text-xs text-muted-foreground">descargado</p>
+            </div>
+          </div>
+        ) : null}
+
+        {phase === "done" ? (
+          <button type="button" onClick={reset} className="btn btn-secondary self-start">
+            Convertir otro archivo
+          </button>
+        ) : null}
+
+        {phase === "error" ? (
+          <div
+            className="flex flex-col gap-3 rounded-lg p-4"
+            style={{
+              border: "1px solid color-mix(in srgb, var(--destructive) 40%, transparent)",
+              background: "color-mix(in srgb, var(--destructive) 8%, transparent)",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <i className="ph ph-warning" style={{ fontSize: 18, color: "var(--destructive)" }} />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+            <button type="button" onClick={reset} className="btn btn-secondary self-start">
+              Reintentar
+            </button>
           </div>
         ) : null}
       </div>

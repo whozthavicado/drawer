@@ -1,76 +1,223 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import JSZip from "jszip";
-import { suggestZipName, stripZipExtension } from "@/lib/zip";
+import { suggestZipName } from "@/lib/zip";
+import { addRecentConversion } from "@/lib/recent-conversions";
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function downloadBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+type ZipEntry = { name: string; size: number };
 
 export default function ZipToolPage() {
-  const [status, setStatus] = useState("");
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [compressing, setCompressing] = useState(false);
 
-  async function handleCompress(e: ChangeEvent<HTMLInputElement>) {
+  const [archive, setArchive] = useState<JSZip | null>(null);
+  const [archiveName, setArchiveName] = useState("");
+  const [entries, setEntries] = useState<ZipEntry[]>([]);
+  const [extracting, setExtracting] = useState(false);
+
+  const compressInputRef = useRef<HTMLInputElement>(null);
+  const decompressInputRef = useRef<HTMLInputElement>(null);
+
+  function handleStageFiles(e: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
-    setStatus("Comprimiendo…");
-
-    const zip = new JSZip();
-    for (const file of files) {
-      zip.file(file.name, await file.arrayBuffer());
-    }
-    const blob = await zip.generateAsync({ type: "blob" });
-    downloadBlob(blob, suggestZipName(files));
-    setStatus("Listo.");
+    setStagedFiles((prev) => [...prev, ...files]);
+    e.target.value = "";
   }
 
-  async function handleDecompress(e: ChangeEvent<HTMLInputElement>) {
+  function removeStagedFile(index: number) {
+    setStagedFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function handleCreateZip() {
+    if (stagedFiles.length === 0) return;
+    setCompressing(true);
+    try {
+      const zip = new JSZip();
+      for (const file of stagedFiles) {
+        zip.file(file.name, await file.arrayBuffer());
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const name = suggestZipName(stagedFiles);
+      downloadBlob(blob, name);
+      addRecentConversion({ filename: name, label: "Comprimido" });
+      setStagedFiles([]);
+    } finally {
+      setCompressing(false);
+    }
+  }
+
+  async function handleChooseZip(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    setStatus(`Descomprimiendo ${stripZipExtension(file.name)}…`);
 
     const zip = await JSZip.loadAsync(file);
-    const entries = Object.values(zip.files).filter((f) => !f.dir);
-    for (const entry of entries) {
-      const blob = await entry.async("blob");
-      downloadBlob(blob, entry.name);
-    }
-    setStatus(`Listo — ${entries.length} archivo(s) descargado(s).`);
+    const zipEntries = Object.values(zip.files)
+      .filter((f) => !f.dir)
+      .map((f) => ({ name: f.name, size: (f as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize ?? 0 }));
+
+    setArchive(zip);
+    setArchiveName(file.name);
+    setEntries(zipEntries);
   }
 
-  function downloadBlob(blob: Blob, name: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
+  async function handleExtractAll() {
+    if (!archive) return;
+    setExtracting(true);
+    try {
+      const files = Object.values(archive.files).filter((f) => !f.dir);
+      for (const entry of files) {
+        const blob = await entry.async("blob");
+        downloadBlob(blob, entry.name);
+      }
+      addRecentConversion({ filename: archiveName, label: "Descomprimido" });
+      clearArchive();
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  function clearArchive() {
+    setArchive(null);
+    setArchiveName("");
+    setEntries([]);
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
+    <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
       <h1 className="mb-6 font-mono text-2xl font-semibold">ZIP</h1>
 
-      <div className="flex flex-col gap-4">
-        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
-          <h2 className="mb-3 font-medium">Comprimir</h2>
-          <input
-            type="file"
-            multiple
-            onChange={handleCompress}
-            className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-foreground hover:file:opacity-90"
-          />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Comprimir */}
+        <section className="card flex flex-col gap-4 p-5">
+          <h2 className="font-medium">Comprimir</h2>
+
+          <button
+            type="button"
+            onClick={() => compressInputRef.current?.click()}
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-center transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+            style={{ borderColor: "var(--divider)" }}
+          >
+            <i className="ph ph-upload-simple" style={{ fontSize: 26, color: "var(--muted-foreground)" }} />
+            <span className="text-sm text-muted-foreground">Elegir archivos</span>
+            <input
+              ref={compressInputRef}
+              type="file"
+              multiple
+              onChange={handleStageFiles}
+              className="hidden"
+            />
+          </button>
+
+          {stagedFiles.length > 0 ? (
+            <ul className="flex flex-col gap-1.5">
+              {stagedFiles.map((file, i) => (
+                <li
+                  key={`${file.name}-${i}`}
+                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm"
+                >
+                  <span className="min-w-0 truncate font-mono">{file.name}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {formatSize(file.size)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeStagedFile(i)}
+                    aria-label={`Quitar ${file.name}`}
+                    className="btn btn-ghost btn-icon shrink-0"
+                  >
+                    <i className="ph ph-x" style={{ fontSize: 16 }} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleCreateZip}
+            disabled={stagedFiles.length === 0 || compressing}
+            className="btn btn-primary-filled"
+          >
+            {compressing ? "Comprimiendo…" : "Crear .zip"}
+          </button>
         </section>
 
-        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
-          <h2 className="mb-3 font-medium">Descomprimir</h2>
-          <input
-            type="file"
-            accept=".zip"
-            onChange={handleDecompress}
-            className="block w-full text-sm text-muted-foreground file:mr-3 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent file:px-4 file:font-medium file:text-accent-foreground hover:file:opacity-90"
-          />
+        {/* Descomprimir */}
+        <section className="card flex flex-col gap-4 p-5">
+          <h2 className="font-medium">Descomprimir</h2>
+
+          {!archive ? (
+            <button
+              type="button"
+              onClick={() => decompressInputRef.current?.click()}
+              className="flex flex-col items-center justify-center gap-2 rounded-lg border py-10 text-center transition-colors"
+              style={{
+                borderStyle: "dashed",
+                borderColor: "color-mix(in srgb, var(--accent) 45%, transparent)",
+                background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+              }}
+            >
+              <i className="ph ph-file-zip" style={{ fontSize: 26, color: "var(--accent)" }} />
+              <span className="text-sm text-muted-foreground">Elegir un .zip</span>
+              <input
+                ref={decompressInputRef}
+                type="file"
+                accept=".zip"
+                onChange={handleChooseZip}
+                className="hidden"
+              />
+            </button>
+          ) : (
+            <>
+              <p className="truncate font-mono text-sm">{archiveName}</p>
+              <ul className="flex max-h-56 flex-col gap-1.5 overflow-y-auto">
+                {entries.map((entry) => (
+                  <li
+                    key={entry.name}
+                    className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm"
+                  >
+                    <span className="min-w-0 truncate font-mono">{entry.name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatSize(entry.size)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleExtractAll}
+                  disabled={extracting}
+                  className="btn btn-primary-filled"
+                >
+                  {extracting ? "Descomprimiendo…" : "Descargar todo"}
+                </button>
+                <button type="button" onClick={clearArchive} className="btn btn-secondary">
+                  Limpiar
+                </button>
+              </div>
+            </>
+          )}
         </section>
       </div>
-
-      {status ? <p className="mt-4 text-sm text-muted-foreground">{status}</p> : null}
     </main>
   );
 }
