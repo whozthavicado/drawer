@@ -18,6 +18,12 @@ export default function AccountPage() {
     if (!error) setPassword("");
   }
 
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
+
   return (
     <main className="mx-auto max-w-sm px-6 py-10">
       <h1 className="mb-6 text-2xl font-semibold">Cuenta</h1>
@@ -52,6 +58,13 @@ export default function AccountPage() {
           </p>
         ) : null}
       </form>
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="mt-4 rounded border border-neutral-300 px-3 py-2 text-neutral-900"
+      >
+        Cerrar sesión
+      </button>
     </main>
   );
 }
