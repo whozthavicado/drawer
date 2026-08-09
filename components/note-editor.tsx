@@ -40,8 +40,11 @@ export function NoteEditor({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 sm:p-6">
-      <div className="field">
+    <form
+      onSubmit={handleSubmit}
+      className="flex h-full flex-col gap-4 p-5 sm:p-6"
+    >
+      <div className="field flex-none">
         <label htmlFor="note-title">Título</label>
         <input
           id="note-title"
@@ -51,7 +54,7 @@ export function NoteEditor({
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
-      <div className="field">
+      <div className="field flex-none">
         <label htmlFor="note-tags">Tags (separados por coma)</label>
         <input
           id="note-tags"
@@ -61,19 +64,19 @@ export function NoteEditor({
           onChange={(e) => setTags(e.target.value)}
         />
       </div>
-      <div className="field">
+      <div className="field flex flex-1 flex-col">
         <label htmlFor="note-content">Contenido</label>
         <textarea
           id="note-content"
-          className="input font-mono"
+          className="input flex-1 font-mono"
+          style={{ resize: "none" }}
           placeholder="Escribe tu nota, prompt o idea…"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          rows={12}
         />
       </div>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <div className="flex gap-2">
+      {error ? <p className="flex-none text-sm text-destructive">{error}</p> : null}
+      <div className="flex flex-none gap-2">
         <button type="submit" disabled={saving} className="btn btn-primary-filled">
           {saving ? "Guardando…" : "Guardar"}
         </button>
