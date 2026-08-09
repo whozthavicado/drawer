@@ -18,12 +18,12 @@ export const THEME_STORAGE_KEY = "drawer:theme";
 
 export const THEMES: ThemeOption[] = [
   { id: "nocturne", label: "Blurple", swatch: "#9184d9", background: "#0e0f18" },
-  { id: "esmeralda", label: "Esmeralda", swatch: "#10b981", background: "#0e0f18" },
-  { id: "ambar", label: "Ámbar", swatch: "#eab308", background: "#0e0f18" },
-  { id: "cian", label: "Cian", swatch: "#06b6d4", background: "#0e0f18" },
-  { id: "coral", label: "Coral", swatch: "#f43f5e", background: "#0e0f18" },
-  { id: "terracota", label: "Terracota", swatch: "#f97316", background: "#0e0f18" },
-  { id: "bernumeno", label: "Bernumeno", swatch: "#d4af37", background: "#000000" },
+  { id: "esmeralda", label: "Esmeralda", swatch: "#3f9c74", background: "#0e0f18" },
+  { id: "ambar", label: "Ámbar", swatch: "#c9922f", background: "#0e0f18" },
+  { id: "cian", label: "Cian", swatch: "#3596a8", background: "#0e0f18" },
+  { id: "coral", label: "Coral", swatch: "#d1705f", background: "#0e0f18" },
+  { id: "terracota", label: "Terracota", swatch: "#b06849", background: "#0e0f18" },
+  { id: "bernumeno", label: "Bernumeno", swatch: "#c8a24a", background: "#141414" },
 ];
 
 export function isThemeId(value: string | null): value is ThemeId {

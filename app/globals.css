@@ -50,68 +50,68 @@
   :root above) needs no override block — it's what :root already is.
 */
 :root[data-theme="esmeralda"] {
-  --accent: #10b981;
-  --accent-100: #d1fae5;
-  --accent-200: #a7f3d0;
-  --accent-300: #6ee7b7;
-  --accent-400: #34d399;
-  --accent-500: #10b981;
-  --accent-600: #059669;
-  --accent-700: #047857;
-  --accent-800: #065f46;
-  --accent-900: #022c22;
+  --accent: #3f9c74;
+  --accent-100: #f0f9f5;
+  --accent-200: #def2e9;
+  --accent-300: #c9e9db;
+  --accent-400: #a4dac3;
+  --accent-500: #80ccab;
+  --accent-600: #51b98c;
+  --accent-700: #3b916c;
+  --accent-800: #2b694e;
+  --accent-900: #1c4533;
 }
 
 :root[data-theme="ambar"] {
-  --accent: #eab308;
-  --accent-100: #fef3c7;
-  --accent-200: #fde68a;
-  --accent-300: #fcd34d;
-  --accent-400: #fbbf24;
-  --accent-500: #eab308;
-  --accent-600: #ca8a04;
-  --accent-700: #a16207;
-  --accent-800: #854d0e;
-  --accent-900: #422006;
+  --accent: #c9922f;
+  --accent-100: #fbf7ee;
+  --accent-200: #f6ecda;
+  --accent-300: #f1e0c1;
+  --accent-400: #e7cb98;
+  --accent-500: #ddb66e;
+  --accent-600: #d19a39;
+  --accent-700: #a57827;
+  --accent-800: #78571c;
+  --accent-900: #4f3912;
 }
 
 :root[data-theme="cian"] {
-  --accent: #06b6d4;
-  --accent-100: #cffafe;
-  --accent-200: #a5f3fc;
-  --accent-300: #67e8f9;
-  --accent-400: #22d3ee;
-  --accent-500: #06b6d4;
-  --accent-600: #0891b2;
-  --accent-700: #0e7490;
-  --accent-800: #155e75;
-  --accent-900: #083344;
+  --accent: #3596a8;
+  --accent-100: #eff8fa;
+  --accent-200: #dcf0f4;
+  --accent-300: #c5e6ed;
+  --accent-400: #9ed6e0;
+  --accent-500: #77c6d4;
+  --accent-600: #45b0c4;
+  --accent-700: #318a9b;
+  --accent-800: #236470;
+  --accent-900: #17424a;
 }
 
 :root[data-theme="coral"] {
-  --accent: #f43f5e;
-  --accent-100: #ffe4e6;
-  --accent-200: #fecdd3;
-  --accent-300: #fda4af;
-  --accent-400: #fb7185;
-  --accent-500: #f43f5e;
-  --accent-600: #e11d48;
-  --accent-700: #be123c;
-  --accent-800: #9f1239;
-  --accent-900: #4c0519;
+  --accent: #d1705f;
+  --accent-100: #faf1ef;
+  --accent-200: #f5dfdb;
+  --accent-300: #eecac4;
+  --accent-400: #e3a69c;
+  --accent-500: #d78374;
+  --accent-600: #c85541;
+  --accent-700: #9e3e2e;
+  --accent-800: #732d21;
+  --accent-900: #4b1e16;
 }
 
 :root[data-theme="terracota"] {
-  --accent: #f97316;
-  --accent-100: #ffedd5;
-  --accent-200: #fed7aa;
-  --accent-300: #fdba74;
-  --accent-400: #fb923c;
-  --accent-500: #f97316;
-  --accent-600: #ea580c;
-  --accent-700: #c2410c;
-  --accent-800: #9a3412;
-  --accent-900: #431407;
+  --accent: #b06849;
+  --accent-100: #f9f3f1;
+  --accent-200: #f2e4df;
+  --accent-300: #e9d2c9;
+  --accent-400: #dab5a5;
+  --accent-500: #cb9781;
+  --accent-600: #b77052;
+  --accent-700: #90553c;
+  --accent-800: #693e2b;
+  --accent-900: #44281c;
 }
 
 /* Bernumeno — the special one: true black, white text, gold accent.
@@ -125,16 +125,16 @@
   --divider: color-mix(in srgb, #ffffff 16%, transparent);
   --border: var(--divider);
 
-  --accent: #d4af37;
-  --accent-100: #fdf6e3;
-  --accent-200: #f5e6b8;
-  --accent-300: #ecd489;
-  --accent-400: #e0bd5c;
-  --accent-500: #d4af37;
-  --accent-600: #b8912a;
-  --accent-700: #8f6f1f;
-  --accent-800: #664f16;
-  --accent-900: #332810;
+  --accent: #c8a24a;
+  --accent-100: #faf7ef;
+  --accent-200: #f4eddc;
+  --accent-300: #ede1c4;
+  --accent-400: #e1cd9d;
+  --accent-500: #d5b976;
+  --accent-600: #c69f43;
+  --accent-700: #9c7c30;
+  --accent-800: #715a22;
+  --accent-900: #4a3b17;
 
   --shadow-sm: 0 0 0 1px #2e2e2e;
   --shadow-md: 0 0 0 1px #3d3d3d, 0 6px 18px rgba(0, 0, 0, 0.7);
