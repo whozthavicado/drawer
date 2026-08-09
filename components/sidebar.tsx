@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  OnboardingModal,
+  type OnboardingModalHandle,
+} from "./onboarding-modal";
+import { InstallBanner } from "./install-banner";
 
 const LINKS = [
   { href: "/", label: "Notas", icon: "ph-note" },
@@ -73,9 +78,14 @@ export function Sidebar({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const showChrome = pathname !== "/login";
+  const onboardingRef = useRef<OnboardingModalHandle>(null);
 
   useEffect(() => {
+    // Reading localStorage in a lazy useState initializer would run during
+    // SSR too (no localStorage there), causing a hydration mismatch — this
+    // has to stay a post-mount effect.
     const stored = localStorage.getItem(COLLAPSE_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored === "1") setCollapsed(true);
   }, []);
 
@@ -141,6 +151,18 @@ export function Sidebar({ children }: { children: ReactNode }) {
             active={pathname === "/account"}
             collapsed={collapsed}
           />
+          <button
+            type="button"
+            onClick={() => onboardingRef.current?.open()}
+            aria-label="Ver guía de bienvenida"
+            title="Ayuda"
+            className={`flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)] ${
+              collapsed ? "justify-center" : ""
+            }`}
+          >
+            <i className="ph ph-question" style={{ fontSize: 19, lineHeight: 1 }} />
+            {collapsed ? null : "Ayuda"}
+          </button>
           <button
             type="button"
             onClick={toggleCollapsed}
@@ -214,7 +236,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
               onClick={() => setOpen(false)}
             />
           ))}
-          <div className="mt-auto pb-4 pt-4">
+          <div className="mt-auto flex flex-col gap-1 pb-4 pt-4">
             <NavLink
               href={ACCOUNT_LINK.href}
               label={ACCOUNT_LINK.label}
@@ -222,11 +244,27 @@ export function Sidebar({ children }: { children: ReactNode }) {
               active={pathname === "/account"}
               onClick={() => setOpen(false)}
             />
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onboardingRef.current?.open();
+              }}
+              className="flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]"
+            >
+              <i className="ph ph-question" style={{ fontSize: 19, lineHeight: 1 }} />
+              Ayuda
+            </button>
           </div>
         </div>
       ) : null}
 
-      <div className="min-w-0 flex-1">{children}</div>
+      <OnboardingModal ref={onboardingRef} />
+
+      <div className="min-w-0 flex-1">
+        <InstallBanner />
+        {children}
+      </div>
     </div>
   );
 }

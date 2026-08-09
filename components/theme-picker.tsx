@@ -7,7 +7,11 @@ export function ThemePicker() {
   const [active, setActive] = useState<ThemeId>("nocturne");
 
   useEffect(() => {
+    // Reading localStorage in a lazy useState initializer would run during
+    // SSR too (no localStorage there), causing a hydration mismatch — this
+    // has to stay a post-mount effect.
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isThemeId(stored)) setActive(stored);
   }, []);
 
