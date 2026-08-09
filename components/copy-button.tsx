@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "./language-provider";
 
 export function CopyButton({
   text,
   iconOnly = false,
   className = "",
-  label = "Copiar",
+  label,
   onCopied,
 }: {
   text: string;
@@ -15,6 +16,7 @@ export function CopyButton({
   label?: string;
   onCopied?: () => void;
 }) {
+  const { t } = useLanguage();
   const [state, setState] = useState<"idle" | "copied" | "error">("idle");
 
   async function handleClick() {
@@ -33,8 +35,14 @@ export function CopyButton({
       <button
         type="button"
         onClick={handleClick}
-        aria-label="Copiar"
-        title={state === "copied" ? "Copiado" : state === "error" ? "Error" : "Copiar"}
+        aria-label={t("notes.copy")}
+        title={
+          state === "copied"
+            ? t("notes.copied")
+            : state === "error"
+              ? t("notes.copyError")
+              : t("notes.copy")
+        }
         className={`btn btn-icon ${
           state === "error" ? "text-destructive" : "btn-ghost"
         } ${className}`}
@@ -54,7 +62,11 @@ export function CopyButton({
       className={`btn btn-primary-filled ${className}`}
     >
       <i className={`ph ${state === "copied" ? "ph-check" : "ph-copy"}`} style={{ fontSize: 16 }} />
-      {state === "copied" ? "Copiado" : state === "error" ? "Error" : label}
+      {state === "copied"
+        ? t("notes.copied")
+        : state === "error"
+          ? t("notes.copyError")
+          : (label ?? t("notes.copy"))}
     </button>
   );
 }

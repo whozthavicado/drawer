@@ -6,6 +6,7 @@ import {
   getRecentConversions,
   type RecentConversion,
 } from "@/lib/recent-conversions";
+import { useLanguage } from "@/components/language-provider";
 
 const EMPTY_RECENTS: RecentConversion[] = [];
 
@@ -35,24 +36,24 @@ const TOOLS = [
   {
     href: "/tools/zip",
     icon: "ph-file-zip",
-    title: "ZIP",
-    description: "Comprime archivos o extrae un .zip.",
+    titleKey: "tools.zip.title",
+    descriptionKey: "tools.zip.description",
   },
   {
     href: "/tools/image",
     icon: "ph-image",
-    title: "Convertir imagen",
-    description: "PNG, JPEG o WebP, sin subir nada.",
+    titleKey: "tools.image.title",
+    descriptionKey: "tools.image.description",
   },
   {
     href: "/tools/media",
     icon: "ph-waveform",
-    title: "Convertir audio y video",
-    description: "Cambia de formato directo en el navegador.",
+    titleKey: "tools.media.title",
+    descriptionKey: "tools.media.description",
   },
 ] as const;
 
-function relativeTime(timestamp: number): string {
+function relativeTime(timestamp: number, t: (key: string, vars?: Record<string, string | number>) => string): string {
   const now = Date.now();
   const diffMs = Math.max(0, now - timestamp);
   const diffMin = Math.floor(diffMs / 60_000);
@@ -65,13 +66,14 @@ function relativeTime(timestamp: number): string {
     entryDate.getMonth() === nowDate.getMonth() &&
     entryDate.getDate() === nowDate.getDate();
 
-  if (!isSameDay) return "ayer";
-  if (diffMin < 1) return "hace un momento";
-  if (diffMin < 60) return `hace ${diffMin} min`;
-  return `hace ${diffHours} ${diffHours === 1 ? "hora" : "horas"}`;
+  if (!isSameDay) return t("tools.relative.yesterday");
+  if (diffMin < 1) return t("tools.relative.justNow");
+  if (diffMin < 60) return t("tools.relative.minutes", { n: diffMin });
+  return t(diffHours === 1 ? "tools.relative.hoursOne" : "tools.relative.hoursMany", { n: diffHours });
 }
 
 export default function ToolsHubPage() {
+  const { t } = useLanguage();
   const recent = useSyncExternalStore(
     subscribeToRecents,
     getRecentsSnapshot,
@@ -81,14 +83,10 @@ export default function ToolsHubPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
       <div className="mb-2 flex flex-wrap items-center gap-3">
-        <h1 className="font-mono text-2xl font-semibold">Herramientas</h1>
-        <span className="tag tag-outline">todo corre en tu navegador</span>
+        <h1 className="font-mono text-2xl font-semibold">{t("tools.title")}</h1>
+        <span className="tag tag-outline">{t("tools.badge")}</span>
       </div>
-      <p className="mb-8 max-w-xl text-sm text-muted-foreground">
-        Trabajos ocasionales que no van en una nota. Los archivos se leen
-        localmente, se procesan localmente, y se entregan de vuelta — nada se
-        sube a ningún lado.
-      </p>
+      <p className="mb-8 max-w-xl text-sm text-muted-foreground">{t("tools.description")}</p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {TOOLS.map((tool) => (
@@ -101,8 +99,8 @@ export default function ToolsHubPage() {
               <i className={`ph ${tool.icon}`} style={{ fontSize: 20 }} />
             </div>
             <div>
-              <p className="font-medium">{tool.title}</p>
-              <p className="text-sm text-muted-foreground">{tool.description}</p>
+              <p className="font-medium">{t(tool.titleKey)}</p>
+              <p className="text-sm text-muted-foreground">{t(tool.descriptionKey)}</p>
             </div>
           </Link>
         ))}
@@ -110,10 +108,10 @@ export default function ToolsHubPage() {
 
       <div className="mt-10">
         <h2 className="mb-3 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
-          Recientes
+          {t("tools.recent")}
         </h2>
         {recent.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sin conversiones recientes.</p>
+          <p className="text-sm text-muted-foreground">{t("tools.noRecent")}</p>
         ) : (
           <ul className="flex flex-col gap-1">
             {recent.map((entry) => (
@@ -124,15 +122,13 @@ export default function ToolsHubPage() {
                 <span className="min-w-0 truncate font-mono">{entry.filename}</span>
                 <span className="tag tag-neutral shrink-0">{entry.label}</span>
                 <span className="shrink-0 text-muted-foreground">
-                  {relativeTime(entry.timestamp)}
+                  {relativeTime(entry.timestamp, t)}
                 </span>
               </li>
             ))}
           </ul>
         )}
-        <p className="mt-4 text-xs text-muted-foreground">
-          Se guarda solo en este navegador, se borra después de 24 horas.
-        </p>
+        <p className="mt-4 text-xs text-muted-foreground">{t("tools.recentNote")}</p>
       </div>
     </main>
   );

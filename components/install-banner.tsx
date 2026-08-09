@@ -6,6 +6,7 @@ import {
   isInstallBannerDismissed,
 } from "@/lib/onboarding";
 import { detectPlatform, isStandaloneDisplay, type Platform } from "@/lib/install-prompt";
+import { useLanguage } from "./language-provider";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -13,6 +14,7 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 export function InstallBanner() {
+  const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<Platform>("other");
   const [deferredPrompt, setDeferredPrompt] =
@@ -70,33 +72,26 @@ export function InstallBanner() {
         style={{ fontSize: 20, color: "var(--accent)" }}
       />
       <div className="min-w-0 flex-1 text-sm">
-        <p className="font-medium">Instala Drawer</p>
+        <p className="font-medium">{t("installBanner.title")}</p>
         {deferredPrompt ? (
-          <p className="text-muted-foreground">
-            Úsala como una app, sin abrir el navegador cada vez.
-          </p>
+          <p className="text-muted-foreground">{t("installBanner.withPrompt")}</p>
         ) : platform === "ios" ? (
           <p className="text-muted-foreground">
-            Toca el botón de compartir{" "}
-            <i className="ph ph-share" style={{ fontSize: 14 }} /> y luego{" "}
-            <strong>&quot;Agregar a pantalla de inicio&quot;</strong>.
+            {t("installBanner.ios").split("{shareIcon}").map((part, i, arr) => (
+              <span key={i}>
+                {part}
+                {i < arr.length - 1 ? (
+                  <i className="ph ph-share" style={{ fontSize: 14 }} />
+                ) : null}
+              </span>
+            ))}
           </p>
         ) : platform === "android" ? (
-          <p className="text-muted-foreground">
-            Abre el menú ⋮ de tu navegador y elige{" "}
-            <strong>&quot;Instalar app&quot;</strong> o{" "}
-            <strong>&quot;Agregar a pantalla de inicio&quot;</strong>.
-          </p>
+          <p className="text-muted-foreground">{t("installBanner.android")}</p>
         ) : platform === "desktop-safari" ? (
-          <p className="text-muted-foreground">
-            Safari de escritorio no permite instalar apps — ábrela en Chrome
-            para instalarla ahí.
-          </p>
+          <p className="text-muted-foreground">{t("installBanner.desktopSafari")}</p>
         ) : (
-          <p className="text-muted-foreground">
-            Busca el ícono de instalar en la barra de direcciones de tu
-            navegador.
-          </p>
+          <p className="text-muted-foreground">{t("installBanner.other")}</p>
         )}
       </div>
       <div className="flex flex-none items-center gap-2">
@@ -107,13 +102,13 @@ export function InstallBanner() {
             className="btn btn-primary-filled"
             style={{ minHeight: 36, padding: "0 12px" }}
           >
-            Instalar
+            {t("installBanner.install")}
           </button>
         ) : null}
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Cerrar"
+          aria-label={t("installBanner.closeAria")}
           className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-muted-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)]"
         >
           <i className="ph ph-x" style={{ fontSize: 16 }} />

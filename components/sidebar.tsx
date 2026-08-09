@@ -8,16 +8,21 @@ import {
   type OnboardingModalHandle,
 } from "./onboarding-modal";
 import { InstallBanner } from "./install-banner";
+import { useLanguage } from "./language-provider";
 
 const LINKS = [
-  { href: "/", label: "Notas", icon: "ph-note" },
-  { href: "/tools", label: "Herramientas", icon: "ph-squares-four" },
-  { href: "/tools/zip", label: "ZIP", icon: "ph-file-zip" },
-  { href: "/tools/image", label: "Convertir imagen", icon: "ph-image" },
-  { href: "/tools/media", label: "Audio y video", icon: "ph-waveform" },
-];
+  { href: "/", labelKey: "sidebar.notes", icon: "ph-note" },
+  { href: "/tools", labelKey: "sidebar.tools", icon: "ph-squares-four" },
+  { href: "/tools/zip", labelKey: "sidebar.zip", icon: "ph-file-zip" },
+  { href: "/tools/image", labelKey: "sidebar.image", icon: "ph-image" },
+  { href: "/tools/media", labelKey: "sidebar.media", icon: "ph-waveform" },
+] as const;
 
-const ACCOUNT_LINK = { href: "/account", label: "Cuenta", icon: "ph-user" };
+const ACCOUNT_LINK = {
+  href: "/account",
+  labelKey: "sidebar.account",
+  icon: "ph-user",
+} as const;
 
 const COLLAPSE_KEY = "drawer:sidebar-collapsed";
 
@@ -75,6 +80,7 @@ function NavLink({
 
 export function Sidebar({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const showChrome = pathname !== "/login";
@@ -121,7 +127,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
         </div>
         <NavLink
           href="/"
-          label="Notas"
+          label={t("sidebar.notes")}
           icon="ph-note"
           active={pathname === "/"}
           collapsed={collapsed}
@@ -130,14 +136,14 @@ export function Sidebar({ children }: { children: ReactNode }) {
           <div className="mx-2.5 mb-1.5 mt-5 border-t border-border" />
         ) : (
           <div className="mb-1.5 mt-5 px-2.5 font-mono text-[10px] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--foreground)_38%,transparent)]">
-            Herramientas
+            {t("sidebar.tools")}
           </div>
         )}
         {LINKS.filter((l) => l.href !== "/").map((l) => (
           <NavLink
             key={l.href}
             href={l.href}
-            label={l.label}
+            label={t(l.labelKey)}
             icon={l.icon}
             active={pathname === l.href}
             collapsed={collapsed}
@@ -146,7 +152,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
         <div className="mt-auto flex flex-col gap-1 pt-4">
           <NavLink
             href={ACCOUNT_LINK.href}
-            label={ACCOUNT_LINK.label}
+            label={t(ACCOUNT_LINK.labelKey)}
             icon={ACCOUNT_LINK.icon}
             active={pathname === "/account"}
             collapsed={collapsed}
@@ -154,20 +160,20 @@ export function Sidebar({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => onboardingRef.current?.open()}
-            aria-label="Ver guía de bienvenida"
-            title="Ayuda"
+            aria-label={t("sidebar.helpAria")}
+            title={t("sidebar.help")}
             className={`flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)] ${
               collapsed ? "justify-center" : ""
             }`}
           >
             <i className="ph ph-question" style={{ fontSize: 19, lineHeight: 1 }} />
-            {collapsed ? null : "Ayuda"}
+            {collapsed ? null : t("sidebar.help")}
           </button>
           <button
             type="button"
             onClick={toggleCollapsed}
-            aria-label={collapsed ? "Expandir barra lateral" : "Colapsar barra lateral"}
-            title={collapsed ? "Expandir" : "Colapsar"}
+            aria-label={collapsed ? t("sidebar.expandAria") : t("sidebar.collapseAria")}
+            title={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
             className={`flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)] ${
               collapsed ? "justify-center" : ""
             }`}
@@ -176,7 +182,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
               className={`ph ${collapsed ? "ph-arrow-line-right" : "ph-arrow-line-left"}`}
               style={{ fontSize: 19, lineHeight: 1 }}
             />
-            {collapsed ? null : "Colapsar"}
+            {collapsed ? null : t("sidebar.collapse")}
           </button>
         </div>
       </aside>
@@ -192,7 +198,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Abrir menú"
+          aria-label={t("sidebar.openMenu")}
           className="ml-auto flex h-11 w-11 items-center justify-center rounded-lg text-foreground"
         >
           <i className="ph ph-list" style={{ fontSize: 24, lineHeight: 1 }} />
@@ -210,7 +216,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Cerrar menú"
+              aria-label={t("sidebar.closeMenu")}
               className="ml-auto flex h-11 w-11 items-center justify-center rounded-lg text-foreground"
             >
               <i className="ph ph-x" style={{ fontSize: 23, lineHeight: 1 }} />
@@ -218,19 +224,19 @@ export function Sidebar({ children }: { children: ReactNode }) {
           </div>
           <NavLink
             href="/"
-            label="Notas"
+            label={t("sidebar.notes")}
             icon="ph-note"
             active={pathname === "/"}
             onClick={() => setOpen(false)}
           />
           <div className="mb-1.5 mt-6 px-2.5 font-mono text-[10.5px] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--foreground)_38%,transparent)]">
-            Herramientas
+            {t("sidebar.tools")}
           </div>
           {LINKS.filter((l) => l.href !== "/").map((l) => (
             <NavLink
               key={l.href}
               href={l.href}
-              label={l.label}
+              label={t(l.labelKey)}
               icon={l.icon}
               active={pathname === l.href}
               onClick={() => setOpen(false)}
@@ -239,7 +245,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
           <div className="mt-auto flex flex-col gap-1 pb-4 pt-4">
             <NavLink
               href={ACCOUNT_LINK.href}
-              label={ACCOUNT_LINK.label}
+              label={t(ACCOUNT_LINK.labelKey)}
               icon={ACCOUNT_LINK.icon}
               active={pathname === "/account"}
               onClick={() => setOpen(false)}
@@ -253,7 +259,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
               className="flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]"
             >
               <i className="ph ph-question" style={{ fontSize: 19, lineHeight: 1 }} />
-              Ayuda
+              {t("sidebar.help")}
             </button>
           </div>
         </div>

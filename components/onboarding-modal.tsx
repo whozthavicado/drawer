@@ -2,41 +2,23 @@
 
 import { useEffect, useImperativeHandle, useState, forwardRef } from "react";
 import { hasSeenOnboarding, markOnboardingSeen } from "@/lib/onboarding";
+import { useLanguage } from "./language-provider";
 
 export type OnboardingModalHandle = {
   open: () => void;
 };
 
 const STEPS = [
-  {
-    icon: "ph-hand-waving",
-    title: "¡Bienvenido a Drawer!",
-    body: "Tu cajón personal para notas, prompts e ideas — con copiado en un clic.",
-  },
-  {
-    icon: "ph-note",
-    title: "Crea y organiza tus notas",
-    body: "Búscalas, ponles tags, y usa el botón de copiar para llevarlas a donde las necesites al instante.",
-  },
-  {
-    icon: "ph-squares-four",
-    title: "ZIP, imágenes y audio/video",
-    body: "Todo corre en tu navegador — nada se sube a internet, tus archivos nunca salen de tu dispositivo.",
-  },
-  {
-    icon: "ph-palette",
-    title: "Hazla tuya",
-    body: "Cambia el color desde Cuenta, y agrégala a tu pantalla de inicio para usarla como una app de verdad.",
-  },
-  {
-    icon: "ph-check-circle",
-    title: "¡Listo!",
-    body: "Ya sabes lo básico. Puedes volver a ver esta guía cuando quieras con el botón de ayuda.",
-  },
-];
+  { icon: "ph-hand-waving", titleKey: "onboarding.step1.title", bodyKey: "onboarding.step1.body" },
+  { icon: "ph-note", titleKey: "onboarding.step2.title", bodyKey: "onboarding.step2.body" },
+  { icon: "ph-squares-four", titleKey: "onboarding.step3.title", bodyKey: "onboarding.step3.body" },
+  { icon: "ph-palette", titleKey: "onboarding.step4.title", bodyKey: "onboarding.step4.body" },
+  { icon: "ph-check-circle", titleKey: "onboarding.step5.title", bodyKey: "onboarding.step5.body" },
+] as const;
 
 export const OnboardingModal = forwardRef<OnboardingModalHandle>(
   function OnboardingModal(_props, ref) {
+    const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(0);
 
@@ -70,8 +52,8 @@ export const OnboardingModal = forwardRef<OnboardingModalHandle>(
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--accent)]">
               <i className={`ph ${current.icon}`} style={{ fontSize: 24 }} />
             </div>
-            <h2 className="dialog-title">{current.title}</h2>
-            <p className="dialog-body">{current.body}</p>
+            <h2 className="dialog-title">{t(current.titleKey)}</h2>
+            <p className="dialog-body">{t(current.bodyKey)}</p>
           </div>
 
           <div className="flex items-center justify-center gap-1.5 py-1">
@@ -97,11 +79,11 @@ export const OnboardingModal = forwardRef<OnboardingModalHandle>(
                 className="btn btn-secondary"
                 onClick={() => setStep((s) => s - 1)}
               >
-                Atrás
+                {t("onboarding.back")}
               </button>
             ) : (
               <button type="button" className="btn btn-ghost" onClick={close}>
-                Saltar
+                {t("onboarding.skip")}
               </button>
             )}
             <button
@@ -109,7 +91,7 @@ export const OnboardingModal = forwardRef<OnboardingModalHandle>(
               className="btn btn-primary-filled"
               onClick={isLast ? close : () => setStep((s) => s + 1)}
             >
-              {isLast ? "Comenzar" : "Siguiente"}
+              {isLast ? t("onboarding.start") : t("onboarding.next")}
             </button>
           </div>
         </div>

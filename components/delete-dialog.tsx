@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "./language-provider";
+
 export function DeleteDialog({
   noteTitle,
   onConfirm,
@@ -9,6 +11,9 @@ export function DeleteDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLanguage();
+  const [before, after] = t("notes.deleteDialogBody", { title: "\0" }).split("\0");
+
   return (
     <div className="dialog-backdrop" onClick={onCancel}>
       <div
@@ -19,17 +24,19 @@ export function DeleteDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="delete-dialog-title" className="text-lg font-medium">
-          ¿Borrar esta nota?
+          {t("notes.deleteDialogTitle")}
         </h3>
         <p className="text-sm text-muted-foreground">
-          &ldquo;{noteTitle}&rdquo; se borrará permanentemente. No se puede deshacer.
+          {before}
+          {noteTitle}
+          {after}
         </p>
         <div className="mt-2 flex justify-end gap-2">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>
-            Mantener
+            {t("notes.keep")}
           </button>
           <button type="button" className="btn btn-danger" onClick={onConfirm}>
-            Borrar
+            {t("notes.delete")}
           </button>
         </div>
       </div>

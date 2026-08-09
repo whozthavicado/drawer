@@ -3,6 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { swapMediaExtension } from "@/lib/media";
 import { addRecentConversion } from "@/lib/recent-conversions";
+import { useLanguage } from "@/components/language-provider";
 
 const PRESETS = [
   { label: "MP4 → MP3", from: "mp4", to: "mp3" },
@@ -19,6 +20,7 @@ function formatSize(bytes: number): string {
 }
 
 export default function MediaToolPage() {
+  const { t } = useLanguage();
   const [preset, setPreset] = useState<(typeof PRESETS)[number]>(PRESETS[0]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
@@ -76,7 +78,7 @@ export default function MediaToolPage() {
     } catch (err) {
       console.error(err);
       setPhase("error");
-      setError("Algo salió mal al convertir — intenta de nuevo.");
+      setError(t("toolMedia.error"));
     }
   }
 
@@ -91,7 +93,7 @@ export default function MediaToolPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
-      <h1 className="mb-6 font-mono text-2xl font-semibold">Convertir audio/video</h1>
+      <h1 className="mb-6 font-mono text-2xl font-semibold">{t("toolMedia.title")}</h1>
 
       <div className="card flex flex-col gap-5 p-5">
         <div className="seg flex-wrap sm:flex-nowrap">
@@ -117,7 +119,7 @@ export default function MediaToolPage() {
             style={{ borderColor: "var(--divider)" }}
           >
             <i className="ph ph-upload-simple" style={{ fontSize: 26, color: "var(--muted-foreground)" }} />
-            <span className="text-sm text-muted-foreground">Elegir archivo</span>
+            <span className="text-sm text-muted-foreground">{t("toolMedia.choose")}</span>
           </button>
         ) : null}
 
@@ -164,7 +166,7 @@ export default function MediaToolPage() {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              {phase === "loading" ? "Preparando…" : `Convirtiendo… ${progress}%`}
+              {phase === "loading" ? t("toolMedia.preparing") : t("toolMedia.converting", { n: progress })}
             </p>
           </div>
         ) : null}
@@ -179,14 +181,14 @@ export default function MediaToolPage() {
               <p className="truncate font-mono">
                 {swapMediaExtension(activeFile.name, preset.to)}
               </p>
-              <p className="text-xs text-muted-foreground">descargado</p>
+              <p className="text-xs text-muted-foreground">{t("toolMedia.downloaded")}</p>
             </div>
           </div>
         ) : null}
 
         {phase === "done" ? (
           <button type="button" onClick={reset} className="btn btn-secondary self-start">
-            Convertir otro archivo
+            {t("toolMedia.convertAnother")}
           </button>
         ) : null}
 
@@ -203,7 +205,7 @@ export default function MediaToolPage() {
               <p className="text-sm text-destructive">{error}</p>
             </div>
             <button type="button" onClick={reset} className="btn btn-secondary self-start">
-              Reintentar
+              {t("toolMedia.retry")}
             </button>
           </div>
         ) : null}

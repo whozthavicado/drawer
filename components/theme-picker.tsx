@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { isThemeId, THEME_STORAGE_KEY, THEMES, type ThemeId } from "@/lib/theme";
+import { useLanguage } from "./language-provider";
 
 export function ThemePicker() {
+  const { t } = useLanguage();
   const [active, setActive] = useState<ThemeId>("nocturne");
 
   useEffect(() => {
@@ -29,10 +31,10 @@ export function ThemePicker() {
     <div className="card flex flex-col gap-3 p-4 sm:p-5">
       <div>
         <div className="mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
-          Tema
+          {t("theme.label")}
         </div>
         <p className="text-[12.5px] text-muted-foreground">
-          Cambia el acento de Drawer. El fondo se mantiene oscuro.
+          {t("theme.description")}
         </p>
       </div>
       <div className="flex flex-wrap gap-2.5">

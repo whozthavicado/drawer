@@ -6,10 +6,12 @@ import { deleteNote } from "@/app/actions";
 import { CopyButton } from "./copy-button";
 import { NoteEditor } from "./note-editor";
 import { DeleteDialog } from "./delete-dialog";
+import { useLanguage } from "./language-provider";
 
 type Mode = "view" | "edit" | "create";
 
 export function NoteList({ notes }: { notes: Note[] }) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
       {/* List pane */}
       <div className="flex w-full flex-col gap-4 p-4 sm:p-6 md:h-screen md:w-[372px] md:flex-none md:overflow-y-auto md:border-r md:border-border md:p-5">
         <input
-          placeholder="Buscar…"
+          placeholder={t("notes.search")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="input"
@@ -88,7 +90,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
               onClick={() => setActiveTag(null)}
               className={`tag tag-outline ${!activeTag ? "is-active" : ""}`}
             >
-              Todas
+              {t("notes.allTags")}
             </button>
             {allTags.map((tag) => (
               <button
@@ -105,7 +107,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
 
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground">
-            {filtered.length} de {notes.length} notas
+            {t("notes.count", { filtered: filtered.length, total: notes.length })}
           </p>
           <button
             type="button"
@@ -113,7 +115,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
             className="btn btn-primary-filled hidden md:inline-flex"
           >
             <i className="ph ph-plus" style={{ fontSize: 16 }} />
-            Nueva nota
+            {t("notes.new")}
           </button>
         </div>
 
@@ -167,14 +169,14 @@ export function NoteList({ notes }: { notes: Note[] }) {
                   <div className="flex items-center gap-2">
                     <CopyButton
                       text={note.content}
-                      label="Copiar"
+                      label={t("notes.copy")}
                       className="btn-block flex-1"
                       onCopied={showToast}
                     />
                     <button
                       type="button"
                       onClick={() => startEdit(note)}
-                      aria-label="Editar"
+                      aria-label={t("notes.editAria")}
                       className="btn btn-icon btn-secondary"
                     >
                       <i className="ph ph-pencil-simple" style={{ fontSize: 18 }} />
@@ -182,7 +184,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
                     <button
                       type="button"
                       onClick={() => setDeleteTarget(note)}
-                      aria-label="Borrar"
+                      aria-label={t("notes.deleteAria")}
                       className="btn btn-icon btn-danger"
                     >
                       <i className="ph ph-trash" style={{ fontSize: 18 }} />
@@ -194,7 +196,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
           })}
           {filtered.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {notes.length === 0 ? "Todavía no tienes notas." : "Sin resultados."}
+              {notes.length === 0 ? t("notes.empty") : t("notes.noResults")}
             </p>
           ) : null}
         </ul>
@@ -220,11 +222,11 @@ export function NoteList({ notes }: { notes: Note[] }) {
                 ) : null}
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <CopyButton text={selected.content} label="Copiar nota" onCopied={showToast} />
+                <CopyButton text={selected.content} label={t("notes.copyNote")} onCopied={showToast} />
                 <button
                   type="button"
                   onClick={() => startEdit(selected)}
-                  aria-label="Editar"
+                  aria-label={t("notes.editAria")}
                   className="btn btn-icon btn-secondary"
                 >
                   <i className="ph ph-pencil-simple" style={{ fontSize: 18 }} />
@@ -232,7 +234,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(selected)}
-                  aria-label="Borrar"
+                  aria-label={t("notes.deleteAria")}
                   className="btn btn-icon btn-danger"
                 >
                   <i className="ph ph-trash" style={{ fontSize: 18 }} />
@@ -247,7 +249,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-muted-foreground">
             <i className="ph ph-note" style={{ fontSize: 32 }} />
-            <p className="text-sm">Selecciona una nota para verla aquí.</p>
+            <p className="text-sm">{t("notes.selectPrompt")}</p>
           </div>
         )}
       </div>
@@ -256,7 +258,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
       <button
         type="button"
         onClick={startCreate}
-        aria-label="Nueva nota"
+        aria-label={t("notes.new")}
         className="btn btn-primary-filled btn-icon fixed bottom-5 right-5 z-30 md:hidden"
         style={{ boxShadow: "var(--shadow-md)" }}
       >
@@ -268,12 +270,12 @@ export function NoteList({ notes }: { notes: Note[] }) {
         <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-background md:hidden">
           <div className="flex h-[52px] flex-none items-center gap-2 border-b border-border px-4">
             <span className="font-medium">
-              {mode === "edit" ? "Editar nota" : "Nueva nota"}
+              {mode === "edit" ? t("notes.editTitle") : t("notes.newTitle")}
             </span>
             <button
               type="button"
               onClick={closeEditor}
-              aria-label="Cerrar"
+              aria-label={t("notes.closeAria")}
               className="btn btn-icon btn-ghost ml-auto"
             >
               <i className="ph ph-x" style={{ fontSize: 20 }} />
@@ -296,7 +298,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
           className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-surface px-4 py-2 text-sm md:bottom-5"
           style={{ boxShadow: "var(--shadow-md)" }}
         >
-          Copiado al portapapeles
+          {t("notes.copiedToast")}
         </div>
       ) : null}
     </div>

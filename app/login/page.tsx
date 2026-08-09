@@ -2,10 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/language-provider";
 
 type Mode = "signin" | "signup";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +29,7 @@ export default function LoginPage() {
       });
       if (error) {
         setStatus("error");
-        setErrorMessage("Correo o contraseña incorrectos — intenta de nuevo.");
+        setErrorMessage(t("login.errorWrongCredentials"));
         return;
       }
       window.location.href = "/";
@@ -37,7 +39,7 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       setStatus("error");
-      setErrorMessage(error.message || "No se pudo crear la cuenta.");
+      setErrorMessage(error.message || t("login.errorSignupGeneric"));
       return;
     }
     if (data.session) {
@@ -60,26 +62,25 @@ export default function LoginPage() {
     <main className="mx-auto flex min-h-[calc(100dvh-57px)] max-w-sm flex-col justify-center px-4 py-10 sm:px-6">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-xl sm:p-8">
         <h1 className="mb-1 font-mono text-2xl font-semibold">Drawer</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Tu cajón de notas, prompts y herramientas.
-        </p>
+        <p className="mb-6 text-sm text-muted-foreground">{t("login.subtitle")}</p>
 
         {status === "check-email" ? (
           <p className="text-sm text-muted-foreground">
-            Te mandamos un correo a <strong>{email}</strong> para confirmar tu
-            cuenta. Ábrelo y luego regresa a entrar.
+            {t("login.checkEmail").split("{email}")[0]}
+            <strong>{email}</strong>
+            {t("login.checkEmail").split("{email}")[1]}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-sm text-muted-foreground">
-                Correo
+                {t("login.emailLabel")}
               </label>
               <input
                 id="email"
                 type="email"
                 required
-                placeholder="tu@correo.com"
+                placeholder={t("login.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="min-h-[44px] rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground/60"
@@ -90,7 +91,7 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="text-sm text-muted-foreground"
               >
-                Contraseña
+                {t("login.passwordLabel")}
               </label>
               <input
                 id="password"
@@ -110,11 +111,11 @@ export default function LoginPage() {
             >
               {status === "sending"
                 ? mode === "signin"
-                  ? "Entrando…"
-                  : "Creando cuenta…"
+                  ? t("login.signingIn")
+                  : t("login.creatingAccount")
                 : mode === "signin"
-                  ? "Entrar"
-                  : "Crear cuenta"}
+                  ? t("login.signIn")
+                  : t("login.signUp")}
             </button>
             {status === "error" ? (
               <p className="text-sm text-destructive">{errorMessage}</p>
@@ -128,9 +129,7 @@ export default function LoginPage() {
             onClick={toggleMode}
             className="mt-5 w-full text-center text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
-            {mode === "signin"
-              ? "¿No tienes cuenta? Regístrate"
-              : "¿Ya tienes cuenta? Entra"}
+            {mode === "signin" ? t("login.toggleToSignup") : t("login.toggleToSignin")}
           </button>
         ) : null}
       </div>

@@ -4,6 +4,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import JSZip from "jszip";
 import { suggestZipName } from "@/lib/zip";
 import { addRecentConversion } from "@/lib/recent-conversions";
+import { useLanguage } from "@/components/language-provider";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -23,6 +24,7 @@ function downloadBlob(blob: Blob, name: string) {
 type ZipEntry = { name: string; size: number };
 
 export default function ZipToolPage() {
+  const { t } = useLanguage();
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [compressing, setCompressing] = useState(false);
 
@@ -56,7 +58,7 @@ export default function ZipToolPage() {
       const blob = await zip.generateAsync({ type: "blob" });
       const name = suggestZipName(stagedFiles);
       downloadBlob(blob, name);
-      addRecentConversion({ filename: name, label: "Comprimido" });
+      addRecentConversion({ filename: name, label: t("toolZip.labelCompressed") });
       setStagedFiles([]);
     } finally {
       setCompressing(false);
@@ -87,7 +89,7 @@ export default function ZipToolPage() {
         const blob = await entry.async("blob");
         downloadBlob(blob, entry.name);
       }
-      addRecentConversion({ filename: archiveName, label: "Descomprimido" });
+      addRecentConversion({ filename: archiveName, label: t("toolZip.labelDecompressed") });
       clearArchive();
     } finally {
       setExtracting(false);
@@ -102,12 +104,12 @@ export default function ZipToolPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-      <h1 className="mb-6 font-mono text-2xl font-semibold">ZIP</h1>
+      <h1 className="mb-6 font-mono text-2xl font-semibold">{t("toolZip.title")}</h1>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Comprimir */}
         <section className="card flex flex-col gap-4 p-5">
-          <h2 className="font-medium">Comprimir</h2>
+          <h2 className="font-medium">{t("toolZip.compressTitle")}</h2>
 
           <button
             type="button"
@@ -116,7 +118,7 @@ export default function ZipToolPage() {
             style={{ borderColor: "var(--divider)" }}
           >
             <i className="ph ph-upload-simple" style={{ fontSize: 26, color: "var(--muted-foreground)" }} />
-            <span className="text-sm text-muted-foreground">Elegir archivos</span>
+            <span className="text-sm text-muted-foreground">{t("toolZip.chooseFiles")}</span>
             <input
               ref={compressInputRef}
               type="file"
@@ -140,7 +142,7 @@ export default function ZipToolPage() {
                   <button
                     type="button"
                     onClick={() => removeStagedFile(i)}
-                    aria-label={`Quitar ${file.name}`}
+                    aria-label={t("toolZip.removeAria", { name: file.name })}
                     className="btn btn-ghost btn-icon shrink-0"
                   >
                     <i className="ph ph-x" style={{ fontSize: 16 }} />
@@ -156,13 +158,13 @@ export default function ZipToolPage() {
             disabled={stagedFiles.length === 0 || compressing}
             className="btn btn-primary-filled"
           >
-            {compressing ? "Comprimiendo…" : "Crear .zip"}
+            {compressing ? t("toolZip.compressing") : t("toolZip.createZip")}
           </button>
         </section>
 
         {/* Descomprimir */}
         <section className="card flex flex-col gap-4 p-5">
-          <h2 className="font-medium">Descomprimir</h2>
+          <h2 className="font-medium">{t("toolZip.decompressTitle")}</h2>
 
           {!archive ? (
             <button
@@ -176,7 +178,7 @@ export default function ZipToolPage() {
               }}
             >
               <i className="ph ph-file-zip" style={{ fontSize: 26, color: "var(--accent)" }} />
-              <span className="text-sm text-muted-foreground">Elegir un .zip</span>
+              <span className="text-sm text-muted-foreground">{t("toolZip.chooseZip")}</span>
               <input
                 ref={decompressInputRef}
                 type="file"
@@ -208,10 +210,10 @@ export default function ZipToolPage() {
                   disabled={extracting}
                   className="btn btn-primary-filled"
                 >
-                  {extracting ? "Descomprimiendo…" : "Descargar todo"}
+                  {extracting ? t("toolZip.decompressing") : t("toolZip.extractAll")}
                 </button>
                 <button type="button" onClick={clearArchive} className="btn btn-secondary">
-                  Limpiar
+                  {t("toolZip.clear")}
                 </button>
               </div>
             </>

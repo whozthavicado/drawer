@@ -3,6 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { swapExtension, mimeForFormat, type ImageFormat } from "@/lib/image";
 import { addRecentConversion } from "@/lib/recent-conversions";
+import { useLanguage } from "@/components/language-provider";
 
 const FORMATS: { value: ImageFormat; label: string }[] = [
   { value: "png", label: "PNG" },
@@ -17,6 +18,7 @@ function formatSize(bytes: number): string {
 }
 
 export default function ImageToolPage() {
+  const { t } = useLanguage();
   const [format, setFormat] = useState<ImageFormat>("jpeg");
   const [converting, setConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function ImageToolPage() {
       (blob) => {
         setConverting(false);
         if (!blob) {
-          setError("No se pudo convertir esta imagen.");
+          setError(t("toolImage.error"));
           return;
         }
         const name = swapExtension(file.name, format);
@@ -71,7 +73,7 @@ export default function ImageToolPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
-      <h1 className="mb-6 font-mono text-2xl font-semibold">Convertir imagen</h1>
+      <h1 className="mb-6 font-mono text-2xl font-semibold">{t("toolImage.title")}</h1>
 
       <div className="card flex flex-col gap-5 p-5">
         <div className="seg">
@@ -96,7 +98,7 @@ export default function ImageToolPage() {
         >
           <i className="ph ph-upload-simple" style={{ fontSize: 26, color: "var(--muted-foreground)" }} />
           <span className="text-sm text-muted-foreground">
-            {converting ? "Convirtiendo…" : "Elegir imagen"}
+            {converting ? t("toolImage.converting") : t("toolImage.choose")}
           </span>
           <input
             ref={inputRef}
@@ -118,7 +120,7 @@ export default function ImageToolPage() {
                 {result.originalName} → .{result.toExt.toLowerCase()}
               </p>
               <p className="text-xs text-muted-foreground">
-                {formatSize(result.size)} — descargado
+                {formatSize(result.size)} — {t("toolImage.downloaded")}
               </p>
             </div>
           </div>

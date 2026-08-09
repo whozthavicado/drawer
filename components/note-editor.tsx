@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { createNote, updateNote } from "@/app/actions";
 import type { Note } from "@/lib/notes";
+import { useLanguage } from "./language-provider";
 
 export function NoteEditor({
   note,
@@ -11,6 +12,7 @@ export function NoteEditor({
   note?: Note;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState(note?.title ?? "");
   const [content, setContent] = useState(note?.content ?? "");
   const [tags, setTags] = useState(note?.tags.join(", ") ?? "");
@@ -33,7 +35,7 @@ export function NoteEditor({
       }
       onClose();
     } catch {
-      setError("No se pudo guardar — intenta de nuevo.");
+      setError(t("notes.editorSaveError"));
     } finally {
       setSaving(false);
     }
@@ -45,32 +47,32 @@ export function NoteEditor({
       className="flex h-full flex-col gap-4 p-5 sm:p-6"
     >
       <div className="field flex-none">
-        <label htmlFor="note-title">Título</label>
+        <label htmlFor="note-title">{t("notes.editorTitleLabel")}</label>
         <input
           id="note-title"
           className="input"
-          placeholder="Título (opcional)"
+          placeholder={t("notes.editorTitlePlaceholder")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
       <div className="field flex-none">
-        <label htmlFor="note-tags">Tags (separados por coma)</label>
+        <label htmlFor="note-tags">{t("notes.editorTagsLabel")}</label>
         <input
           id="note-tags"
           className="input"
-          placeholder="prompts, ideas"
+          placeholder={t("notes.editorTagsPlaceholder")}
           value={tags}
           onChange={(e) => setTags(e.target.value)}
         />
       </div>
       <div className="field flex flex-1 flex-col">
-        <label htmlFor="note-content">Contenido</label>
+        <label htmlFor="note-content">{t("notes.editorContentLabel")}</label>
         <textarea
           id="note-content"
           className="input flex-1 font-mono"
           style={{ resize: "none" }}
-          placeholder="Escribe tu nota, prompt o idea…"
+          placeholder={t("notes.editorContentPlaceholder")}
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
@@ -78,10 +80,10 @@ export function NoteEditor({
       {error ? <p className="flex-none text-sm text-destructive">{error}</p> : null}
       <div className="flex flex-none gap-2">
         <button type="submit" disabled={saving} className="btn btn-primary-filled">
-          {saving ? "Guardando…" : "Guardar"}
+          {saving ? t("notes.saving") : t("notes.save")}
         </button>
         <button type="button" onClick={onClose} className="btn btn-ghost">
-          Cancelar
+          {t("notes.cancel")}
         </button>
       </div>
     </form>

@@ -3,8 +3,13 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ThemePicker } from "@/components/theme-picker";
+import { LanguagePicker } from "@/components/language-picker";
+import { useLanguage } from "@/components/language-provider";
 
-function passwordStrength(password: string): { filled: number; label: string } {
+function passwordStrength(
+  password: string,
+  t: (key: string) => string,
+): { filled: number; label: string } {
   const checks = [
     password.length >= 8,
     /[A-Z]/.test(password),
@@ -12,11 +17,17 @@ function passwordStrength(password: string): { filled: number; label: string } {
     /[^A-Za-z0-9]/.test(password),
   ];
   const filled = checks.filter(Boolean).length;
-  const label = filled <= 1 ? "Débil" : filled <= 3 ? "Regular" : "Fuerte";
+  const label =
+    filled <= 1
+      ? t("account.strengthWeak")
+      : filled <= 3
+        ? t("account.strengthRegular")
+        : t("account.strengthStrong");
   return { filled, label };
 }
 
 export default function AccountPage() {
+  const { t } = useLanguage();
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
@@ -24,7 +35,7 @@ export default function AccountPage() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const strength = useMemo(() => passwordStrength(password), [password]);
+  const strength = useMemo(() => passwordStrength(password, t), [password, t]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -37,7 +48,7 @@ export default function AccountPage() {
     } = await supabase.auth.getUser();
     if (!user?.email) {
       setStatus("error");
-      setErrorMessage("No se pudo verificar tu sesión — intenta iniciar sesión de nuevo.");
+      setErrorMessage(t("account.errorSession"));
       return;
     }
 
@@ -47,14 +58,14 @@ export default function AccountPage() {
     });
     if (reauthError) {
       setStatus("error");
-      setErrorMessage("La contraseña actual no es correcta.");
+      setErrorMessage(t("account.errorWrongCurrent"));
       return;
     }
 
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       setStatus("error");
-      setErrorMessage("Algo salió mal — intenta de nuevo.");
+      setErrorMessage(t("account.errorGeneric"));
       return;
     }
 
@@ -71,15 +82,19 @@ export default function AccountPage() {
 
   return (
     <main className="mx-auto max-w-md px-4 py-6 sm:px-6 sm:py-10">
-      <h1 className="mb-6 font-mono text-2xl font-semibold">Cuenta</h1>
+      <h1 className="mb-6 font-mono text-2xl font-semibold">{t("account.title")}</h1>
 
       <div className="mb-4">
         <ThemePicker />
       </div>
 
+      <div className="mb-4">
+        <LanguagePicker />
+      </div>
+
       <form onSubmit={handleSubmit} className="card flex flex-col gap-4 p-4 sm:p-5">
         <div className="field">
-          <label htmlFor="current-password">Contraseña actual</label>
+          <label htmlFor="current-password">{t("account.currentPasswordLabel")}</label>
           <input
             id="current-password"
             type="password"
@@ -91,7 +106,7 @@ export default function AccountPage() {
         </div>
 
         <div className="field">
-          <label htmlFor="password">Nueva contraseña</label>
+          <label htmlFor="password">{t("account.newPasswordLabel")}</label>
           <input
             id="password"
             type="password"
@@ -124,12 +139,12 @@ export default function AccountPage() {
         ) : null}
 
         <button type="submit" disabled={status === "saving"} className="btn btn-primary-filled">
-          {status === "saving" ? "Guardando…" : "Guardar contraseña"}
+          {status === "saving" ? t("account.saving") : t("account.savePassword")}
         </button>
 
         {status === "saved" ? (
           <p className="text-sm" style={{ color: "#7fd8a8" }}>
-            Contraseña actualizada. Ya puedes usarla para entrar.
+            {t("account.saved")}
           </p>
         ) : null}
         {status === "error" ? (
@@ -138,7 +153,7 @@ export default function AccountPage() {
       </form>
 
       <button type="button" onClick={handleSignOut} className="btn btn-secondary btn-block mt-4">
-        Cerrar sesión
+        {t("account.signOut")}
       </button>
     </main>
   );

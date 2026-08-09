@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Sidebar } from "@/components/sidebar";
 import { ThemeScript } from "@/components/theme-script";
+import { LanguageScript } from "@/components/language-script";
+import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
 
 const bodyFont = Inter({
@@ -50,13 +52,16 @@ export default function RootLayout({
     >
       <head>
         <ThemeScript />
+        <LanguageScript />
         <link
           rel="stylesheet"
           href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"
         />
       </head>
       <body className="min-h-full bg-background text-foreground">
-        <Sidebar>{children}</Sidebar>
+        <LanguageProvider>
+          <Sidebar>{children}</Sidebar>
+        </LanguageProvider>
       </body>
     </html>
   );
