@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ThemePicker } from "@/components/theme-picker";
 
 function passwordStrength(password: string): { filled: number; label: string } {
   const checks = [
@@ -69,8 +70,12 @@ export default function AccountPage() {
   }
 
   return (
-    <main className="mx-auto max-w-sm px-4 py-6 sm:px-6 sm:py-10">
+    <main className="mx-auto max-w-md px-4 py-6 sm:px-6 sm:py-10">
       <h1 className="mb-6 font-mono text-2xl font-semibold">Cuenta</h1>
+
+      <div className="mb-4">
+        <ThemePicker />
+      </div>
 
       <form onSubmit={handleSubmit} className="card flex flex-col gap-4 p-4 sm:p-5">
         <div className="field">

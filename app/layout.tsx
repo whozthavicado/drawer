@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Sidebar } from "@/components/sidebar";
+import { ThemeScript } from "@/components/theme-script";
 import "./globals.css";
 
 const bodyFont = Inter({
@@ -48,6 +49,7 @@ export default function RootLayout({
       className={`${bodyFont.variable} ${headingFont.variable} h-full antialiased`}
     >
       <head>
+        <ThemeScript />
         <link
           rel="stylesheet"
           href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"

@@ -41,6 +41,106 @@
   --shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65);
 }
 
+/*
+  Theme variants — same Nocturne structure (dark background, one accent
+  hue with a 100-900 ramp), just a different accent per theme. Applied via
+  data-theme on <html>, set by components/theme-picker.tsx and persisted to
+  localStorage; components/theme-script.tsx sets it before first paint to
+  avoid a flash of the default theme. "nocturne" (the default, defined in
+  :root above) needs no override block — it's what :root already is.
+*/
+:root[data-theme="esmeralda"] {
+  --accent: #10b981;
+  --accent-100: #d1fae5;
+  --accent-200: #a7f3d0;
+  --accent-300: #6ee7b7;
+  --accent-400: #34d399;
+  --accent-500: #10b981;
+  --accent-600: #059669;
+  --accent-700: #047857;
+  --accent-800: #065f46;
+  --accent-900: #022c22;
+}
+
+:root[data-theme="ambar"] {
+  --accent: #eab308;
+  --accent-100: #fef3c7;
+  --accent-200: #fde68a;
+  --accent-300: #fcd34d;
+  --accent-400: #fbbf24;
+  --accent-500: #eab308;
+  --accent-600: #ca8a04;
+  --accent-700: #a16207;
+  --accent-800: #854d0e;
+  --accent-900: #422006;
+}
+
+:root[data-theme="cian"] {
+  --accent: #06b6d4;
+  --accent-100: #cffafe;
+  --accent-200: #a5f3fc;
+  --accent-300: #67e8f9;
+  --accent-400: #22d3ee;
+  --accent-500: #06b6d4;
+  --accent-600: #0891b2;
+  --accent-700: #0e7490;
+  --accent-800: #155e75;
+  --accent-900: #083344;
+}
+
+:root[data-theme="coral"] {
+  --accent: #f43f5e;
+  --accent-100: #ffe4e6;
+  --accent-200: #fecdd3;
+  --accent-300: #fda4af;
+  --accent-400: #fb7185;
+  --accent-500: #f43f5e;
+  --accent-600: #e11d48;
+  --accent-700: #be123c;
+  --accent-800: #9f1239;
+  --accent-900: #4c0519;
+}
+
+:root[data-theme="terracota"] {
+  --accent: #f97316;
+  --accent-100: #ffedd5;
+  --accent-200: #fed7aa;
+  --accent-300: #fdba74;
+  --accent-400: #fb923c;
+  --accent-500: #f97316;
+  --accent-600: #ea580c;
+  --accent-700: #c2410c;
+  --accent-800: #9a3412;
+  --accent-900: #431407;
+}
+
+/* Bernumeno — the special one: true black, white text, gold accent.
+   Deliberately breaks Nocturne's "avoid pure black" rule on purpose, since
+   that stark contrast is the whole point of this palette. */
+:root[data-theme="bernumeno"] {
+  --background: #000000;
+  --surface: #121212;
+  --foreground: #ffffff;
+  --muted-foreground: color-mix(in srgb, #ffffff 55%, transparent);
+  --divider: color-mix(in srgb, #ffffff 16%, transparent);
+  --border: var(--divider);
+
+  --accent: #d4af37;
+  --accent-100: #fdf6e3;
+  --accent-200: #f5e6b8;
+  --accent-300: #ecd489;
+  --accent-400: #e0bd5c;
+  --accent-500: #d4af37;
+  --accent-600: #b8912a;
+  --accent-700: #8f6f1f;
+  --accent-800: #664f16;
+  --accent-900: #332810;
+
+  --shadow-sm: 0 0 0 1px #2e2e2e;
+  --shadow-md: 0 0 0 1px #3d3d3d, 0 6px 18px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 0 0 1px #545454, 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
