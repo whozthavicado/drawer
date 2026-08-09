@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,6 +13,8 @@ const LINKS = [
 ];
 
 const ACCOUNT_LINK = { href: "/account", label: "Cuenta", icon: "ph-user" };
+
+const COLLAPSE_KEY = "drawer:sidebar-collapsed";
 
 function LogoMark() {
   return (
@@ -37,26 +39,31 @@ function NavLink({
   label,
   icon,
   active,
+  collapsed,
   onClick,
 }: {
   href: string;
   label: string;
   icon: string;
   active: boolean;
+  collapsed?: boolean;
   onClick?: () => void;
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
+      title={collapsed ? label : undefined}
       className={`flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm transition-colors ${
+        collapsed ? "justify-center" : ""
+      } ${
         active
           ? "bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--accent-200)]"
           : "text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-surface"
       }`}
     >
       <i className={`ph ${icon}`} style={{ fontSize: 21, lineHeight: 1 }} />
-      {label}
+      {collapsed ? null : label}
     </Link>
   );
 }
@@ -64,7 +71,21 @@ function NavLink({
 export function Sidebar({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const showChrome = pathname !== "/login";
+
+  useEffect(() => {
+    const stored = localStorage.getItem(COLLAPSE_KEY);
+    if (stored === "1") setCollapsed(true);
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+      return next;
+    });
+  }
 
   if (!showChrome) {
     return <>{children}</>;
@@ -73,22 +94,35 @@ export function Sidebar({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       {/* Desktop sidebar */}
-      <aside className="hidden w-[216px] flex-none flex-col border-r border-border bg-surface p-3 md:flex">
-        <div className="flex items-center gap-2 px-2 pb-5 pt-1.5">
+      <aside
+        className={`hidden flex-none flex-col border-r border-border bg-surface p-3 transition-[width] duration-150 md:flex ${
+          collapsed ? "w-[68px]" : "w-[216px]"
+        }`}
+      >
+        <div
+          className={`flex items-center gap-2 pb-5 pt-1.5 ${collapsed ? "justify-center px-0" : "px-2"}`}
+        >
           <LogoMark />
-          <span className="font-mono text-base font-medium tracking-tight">
-            Drawer
-          </span>
+          {collapsed ? null : (
+            <span className="font-mono text-base font-medium tracking-tight">
+              Drawer
+            </span>
+          )}
         </div>
         <NavLink
           href="/"
           label="Notas"
           icon="ph-note"
           active={pathname === "/"}
+          collapsed={collapsed}
         />
-        <div className="mb-1.5 mt-5 px-2.5 font-mono text-[10px] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--foreground)_38%,transparent)]">
-          Herramientas
-        </div>
+        {collapsed ? (
+          <div className="mx-2.5 mb-1.5 mt-5 border-t border-border" />
+        ) : (
+          <div className="mb-1.5 mt-5 px-2.5 font-mono text-[10px] tracking-[0.14em] uppercase text-[color-mix(in_srgb,var(--foreground)_38%,transparent)]">
+            Herramientas
+          </div>
+        )}
         {LINKS.filter((l) => l.href !== "/").map((l) => (
           <NavLink
             key={l.href}
@@ -96,15 +130,32 @@ export function Sidebar({ children }: { children: ReactNode }) {
             label={l.label}
             icon={l.icon}
             active={pathname === l.href}
+            collapsed={collapsed}
           />
         ))}
-        <div className="mt-auto pt-4">
+        <div className="mt-auto flex flex-col gap-1 pt-4">
           <NavLink
             href={ACCOUNT_LINK.href}
             label={ACCOUNT_LINK.label}
             icon={ACCOUNT_LINK.icon}
             active={pathname === "/account"}
+            collapsed={collapsed}
           />
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? "Expandir barra lateral" : "Colapsar barra lateral"}
+            title={collapsed ? "Expandir" : "Colapsar"}
+            className={`flex min-h-[44px] items-center gap-2.5 rounded-lg px-2.5 text-sm text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)] ${
+              collapsed ? "justify-center" : ""
+            }`}
+          >
+            <i
+              className={`ph ${collapsed ? "ph-arrow-line-right" : "ph-arrow-line-left"}`}
+              style={{ fontSize: 19, lineHeight: 1 }}
+            />
+            {collapsed ? null : "Colapsar"}
+          </button>
         </div>
       </aside>
 
